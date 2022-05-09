@@ -3,14 +3,15 @@ import 'dart:async';
 import 'package:a_pomodoro_tracler/db/db.dart';
 import 'package:drift/drift.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+
+final _timeFormat = DateFormat.Hms();
 
 extension on Duration {
   String toMinuteString() {
     int minutes = inMinutes;
     int seconds = inSeconds - minutes * 60;
-    return '${minutes < 10 ? '0' : ''}$minutes:${seconds < 10
-        ? '0'
-        : ''}$seconds';
+    return '${minutes < 10 ? '0' : ''}$minutes:${seconds < 10 ? '0' : ''}$seconds';
   }
 }
 
@@ -33,9 +34,7 @@ class TimerController extends GetxController {
   TimerController({required Duration pomodoroDuration})
       : _duration = pomodoroDuration,
         _pomodoroDuration = pomodoroDuration.inSeconds.obs,
-        timerString = pomodoroDuration
-            .toMinuteString()
-            .obs,
+        timerString = pomodoroDuration.toMinuteString().obs,
         status = TimerControllerStatus.initial.obs {
     ever<int>(_pomodoroDuration, (value) {
       timerString.value = Duration(seconds: value).toMinuteString();
@@ -101,31 +100,33 @@ class RxDBQueryListener<T> {
   }
 }
 
-// mixin DBListController<T extends Table, D> {
-//   PomoDatabase get db;
-//
-//   TableInfo<T, D> get table;
-//
-//   void add(Insertable<D> d) {
-//     table.insertOne(d);
-//   }
-//
-//   void delete(Insertable<D> d) {
-//     table.deleteOne(d);
-//   }
-//
-//   void update(Insertable<D> d) {
-//     table.replaceOne(d);
-//   }
-// }
-
 class TaskListController extends GetxController {
   final _db = Get.find<PomoDatabase>();
   final _fc = Get.find<FinishedTasksController>();
   late final RxDBQueryListener<Task> queryListener;
 
+  final estimatedFinishingTime = ''.obs;
+
   TaskListController() {
     queryListener = RxDBQueryListener(query: _db.select(_db.tasks));
+    ever<List<Task>>(queryListener.dataList, (curTaskList) {
+      var pomodoros = 0;
+      if (curTaskList.isNotEmpty) {
+        pomodoros = curTaskList
+            .map((e) => e.totalPomodoro)
+            .reduce((value, element) => value + element);
+      }
+      final estTime = DateTime.now().add(Duration(minutes: pomodoros * 25));
+      estimatedFinishingTime.value = _timeFormat.format(estTime);
+    });
+
+    ever<TimerControllerStatus>(Get.find<TimerController>().status, (status) {
+      if (status == TimerControllerStatus.finished) {
+        if (queryListener.dataList.isNotEmpty) {
+          finishOne(queryListener.dataList.first);
+        }
+      }
+    });
   }
 
   void addTask(String title) {
@@ -175,10 +176,7 @@ class FinishedTasksController extends GetxController {
 
   MultiSelectable<FinishedTask> get finishedTasksOfToday =>
       _db.select(_db.finishedTasks)
-        ..where((tbl) =>
-            tbl.finishedAt.day.equals(DateTime
-                .now()
-                .day));
+        ..where((tbl) => tbl.finishedAt.day.equals(DateTime.now().day));
 
   void _finishTask(Task task) {
     final ft = FinishedTasksCompanion.insert(

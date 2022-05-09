@@ -60,13 +60,18 @@ class MyHomePage extends StatelessWidget {
                 children: [
                   const TimerDisplay(),
                   const TimerControllers(),
+                  SizedBox(height: 16),
                   const TaskAdder(),
                 ],
               ),
             ),
+            Divider(),
             Expanded(
               child: TaskListView(),
-            )
+            ),
+            Divider(),
+            EstimatedFinishingTime(),
+            SizedBox(height: 24),
           ],
         ),
       ),

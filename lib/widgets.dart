@@ -114,7 +114,7 @@ class TaskAdder extends StatelessWidget {
     return TextField(
       decoration: InputDecoration(
         border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.zero,
+        contentPadding: EdgeInsets.symmetric(horizontal: 8),
       ),
       controller: controller,
       onEditingComplete: addTask,
@@ -134,9 +134,8 @@ class TaskTile extends StatelessWidget {
       title: Text(task.title),
       subtitle: Text('${task.totalPomodoro * 25} min'),
       trailing: PomodoroCount(task: task),
-      onTap: () {
-      },
-      onLongPress: (){
+      onTap: () {},
+      onLongPress: () {
         controller.deleteTask(task);
       },
     );
@@ -206,6 +205,19 @@ class PomodoroCount extends StatelessWidget {
         controller.increasePomodoroCount(task, 1);
       },
     );
+  }
+}
+
+class EstimatedFinishingTime extends StatelessWidget {
+  const EstimatedFinishingTime({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<TaskListController>();
+    return Obx(() {
+      return Text(
+          'Estimated Finishing Time: ${controller.estimatedFinishingTime.value}');
+    });
   }
 }
 
