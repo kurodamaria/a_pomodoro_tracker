@@ -1,5 +1,6 @@
 import 'package:a_pomodoro_tracler/db/db.dart';
-import 'package:a_pomodoro_tracler/state.dart';
+import 'package:a_pomodoro_tracler/state/TaskListController.dart';
+import 'package:a_pomodoro_tracler/state/TimerController.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -108,6 +109,7 @@ class TaskAdder extends StatelessWidget {
     void addTask() {
       if (controller.value.text.isNotEmpty) {
         taskListController.addTask(controller.value.text);
+        controller.clear();
       }
     }
 

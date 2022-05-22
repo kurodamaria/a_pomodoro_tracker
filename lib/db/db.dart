@@ -7,6 +7,15 @@ import 'package:path_provider/path_provider.dart';
 
 part 'db.g.dart';
 
+class Preferences extends Table {
+  TextColumn get key => text()();
+
+  BlobColumn get value => blob()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
 class Tasks extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -28,22 +37,22 @@ class FinishedTasks extends Table {
   TextColumn get title => text()();
 }
 
-@DriftDatabase(tables: [Tasks, FinishedTasks])
-class PomoDatabase extends _$PomoDatabase {
-  PomoDatabase() : super(_openConnection());
+@DriftDatabase(tables: [Tasks, FinishedTasks, Preferences])
+class PomodoroDatabase extends _$PomodoroDatabase {
+  PomodoroDatabase() : super(_openConnection());
 
   @override
   int get schemaVersion => 1;
 
-  // @override
-  // MigrationStrategy get migration {
-  //   return MigrationStrategy(
-  //     onCreate: (Migrator m) async {
-  //       await m.createAll();
-  //     },
-  //     onUpgrade: (Migrator m, int from, int to) async {},
-  //   );
-  // }
+// @override
+// MigrationStrategy get migration {
+//   return MigrationStrategy(
+//     onCreate: (Migrator m) async {
+//       await m.createAll();
+//     },
+//     onUpgrade: (Migrator m, int from, int to) async {},
+//   );
+// }
 }
 
 LazyDatabase _openConnection() {

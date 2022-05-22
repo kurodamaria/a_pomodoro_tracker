@@ -40,6 +40,8 @@ dependencies:
   path_provider: ^2.0.9
   path: ^1.8.0
   intl: ^0.17.0
+  rx_shared_preferences: ^2.3.0
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_test:
