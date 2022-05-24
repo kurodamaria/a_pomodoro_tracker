@@ -7,15 +7,6 @@ import 'package:path_provider/path_provider.dart';
 
 part 'db.g.dart';
 
-class Preferences extends Table {
-  TextColumn get key => text()();
-
-  BlobColumn get value => blob()();
-
-  @override
-  Set<Column> get primaryKey => {key};
-}
-
 class Tasks extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -37,7 +28,7 @@ class FinishedTasks extends Table {
   TextColumn get title => text()();
 }
 
-@DriftDatabase(tables: [Tasks, FinishedTasks, Preferences])
+@DriftDatabase(tables: [Tasks, FinishedTasks])
 class PomodoroDatabase extends _$PomodoroDatabase {
   PomodoroDatabase() : super(_openConnection());
 

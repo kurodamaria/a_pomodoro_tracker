@@ -92,73 +92,14 @@ class TimerDisplay extends StatelessWidget {
     return Obx(() {
       return Text(timerString.value,
           style: TextStyle(
-            fontSize: 80,
+            fontSize: 26,
           ));
     });
   }
 }
 
-class TaskAdder extends StatelessWidget {
-  const TaskAdder({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    final controller = TextEditingController();
-    final taskListController = Get.find<TaskListController>();
 
-    void addTask() {
-      if (controller.value.text.isNotEmpty) {
-        taskListController.addTask(controller.value.text);
-        controller.clear();
-      }
-    }
-
-    return TextField(
-      decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 8),
-      ),
-      controller: controller,
-      onEditingComplete: addTask,
-    );
-  }
-}
-
-class TaskTile extends StatelessWidget {
-  const TaskTile({Key? key, required this.task}) : super(key: key);
-
-  final Task task;
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<TaskListController>();
-    return ListTile(
-      title: Text(task.title),
-      subtitle: Text('${task.totalPomodoro * 25} min'),
-      trailing: PomodoroCount(task: task),
-      onTap: () {},
-      onLongPress: () {
-        controller.deleteTask(task);
-      },
-    );
-  }
-}
-
-class TaskListView extends StatelessWidget {
-  const TaskListView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<TaskListController>();
-    return Obx(() {
-      return ListView.builder(
-        itemBuilder: (context, index) =>
-            TaskTile(task: controller.queryListener.dataList[index]),
-        itemCount: controller.queryListener.dataList.length,
-      );
-    });
-  }
-}
 
 class TimerControllers extends StatelessWidget {
   const TimerControllers({Key? key}) : super(key: key);
@@ -192,23 +133,6 @@ class TimerControllers extends StatelessWidget {
   }
 }
 
-class PomodoroCount extends StatelessWidget {
-  const PomodoroCount({Key? key, required this.task}) : super(key: key);
-
-  final Task task;
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<TaskListController>();
-    return IconButton(
-      icon: Text('${task.totalPomodoro}'),
-      onPressed: () {
-        // increase pomodoro count by 1
-        controller.increasePomodoroCount(task, 1);
-      },
-    );
-  }
-}
 
 class EstimatedFinishingTime extends StatelessWidget {
   const EstimatedFinishingTime({Key? key}) : super(key: key);

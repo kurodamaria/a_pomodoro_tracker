@@ -1,4 +1,5 @@
 import 'package:a_pomodoro_tracler/db/db.dart';
+import 'package:a_pomodoro_tracler/state/PomodoroConfiguration.dart';
 import 'package:a_pomodoro_tracler/state/RxDBQueryListener.dart';
 import 'package:a_pomodoro_tracler/state/TimerController.dart';
 import 'package:a_pomodoro_tracler/utility.dart';
@@ -7,6 +8,15 @@ import 'package:get/get.dart';
 
 class FinishedTasksController extends GetxController {
   final _db = Get.find<PomodoroDatabase>();
+  final _config = Get.find<PomodoroConfiguration>();
+
+  late final RxDBQueryListener<FinishedTask> allFinishedQL;
+  late final RxDBQueryListener<FinishedTask> todayFinishedQL;
+
+  FinishedTasksController() {
+    allFinishedQL = RxDBQueryListener(query: allFinishedTasks);
+    todayFinishedQL = RxDBQueryListener(query: finishedTasksOfToday);
+  }
 
   MultiSelectable<FinishedTask> get allFinishedTasks =>
       _db.select(_db.finishedTasks);
@@ -17,8 +27,7 @@ class FinishedTasksController extends GetxController {
 
   void _finishTask(Task task) {
     final ft = FinishedTasksCompanion.insert(
-      // todo set global preference
-      pomodoroLength: 25,
+      pomodoroLength: _config.pomodoroLength,
       title: task.title,
     );
 
@@ -83,13 +92,29 @@ class TaskListController extends GetxController {
     }
   }
 
+  void finishTopOne() {
+    if (queryListener.dataList.isNotEmpty) {
+      finishOne(queryListener.dataList.first);
+    }
+  }
+
   void finish(Task task) {
     deleteTask(task);
     _fc._finishTask(task);
   }
 
   void increasePomodoroCount(Task task, int i) {
+    if (i < 0) return;
     final increased = task.copyWith(totalPomodoro: task.totalPomodoro + i);
     updateTask(increased);
+  }
+
+  void decreasePomodoroCount(Task task, int i) {
+    if (i > 0) return;
+    if (task.totalPomodoro + i < 1) deleteTask(task);
+    else {
+      final decreased = task.copyWith(totalPomodoro: task.totalPomodoro + i);
+      updateTask(decreased);
+    }
   }
 }

@@ -22,7 +22,7 @@ class TimerController extends GetxController {
   final PomodoroConfiguration config;
 
   TimerController({required this.config})
-      : _remainSecs = (config.pomodoroLength * 60).obs,
+      : _remainSecs = (3).obs,
         timerString =
             minuteString(Duration(minutes: config.pomodoroLength)).obs,
         status = TimerControllerStatus.initial.obs {
@@ -55,7 +55,7 @@ class TimerController extends GetxController {
   void resetTimer() {
     _timer?.cancel();
     _timer = null;
-    _remainSecs.value = config.pomodoroLength;
+    _remainSecs.value = 3;
   }
 
   bool get isTimerRunning => _timer != null;

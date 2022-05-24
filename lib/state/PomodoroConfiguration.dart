@@ -1,20 +1,29 @@
 import 'package:a_pomodoro_tracler/db/db.dart';
 import 'package:drift/drift.dart';
 import 'package:get/get.dart';
+import 'package:rx_shared_preferences/rx_shared_preferences.dart';
 
 /// Represent the init configuration when the program starts.
 class InitRawConfiguration {
-  static int pomodoroLength = 25;
+  static int pomodoroLength = 1;
   static int cycleLength = 4;
   static int shortBreakLength = 5;
   static int longBreakLength = 15;
 
   static Future<void> init() async {
-    final db = Get.find<PomodoroDatabase>();
-    final Preference rawPLength = await (db.preferences.select()
-          ..where((tbl) =>
-              tbl.key.equals(PomodoroConfiguration.keyPrefPomodoroLength)))
-        .getSingle();
+    final sp = Get.find<SharedPreferences>();
+    if (sp.containsKey(PomodoroConfiguration.keyPrefPomodoroLength)) {
+      pomodoroLength = sp.getInt(PomodoroConfiguration.keyPrefPomodoroLength)!;
+    }
+    if (sp.containsKey(PomodoroConfiguration.keyPrefCycleLength)) {
+      cycleLength = sp.getInt(PomodoroConfiguration.keyPrefCycleLength)!;
+    }
+    if (sp.containsKey(PomodoroConfiguration.keyPrefShortBreakLength)) {
+      shortBreakLength = sp.getInt(PomodoroConfiguration.keyPrefShortBreakLength)!;
+    }
+    if (sp.containsKey(PomodoroConfiguration.keyPrefLongBreakLength)) {
+      longBreakLength = sp.getInt(PomodoroConfiguration.keyPrefLongBreakLength)!;
+    }
   }
 }
 

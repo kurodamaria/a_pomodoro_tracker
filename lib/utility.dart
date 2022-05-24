@@ -19,8 +19,9 @@ List<DateTime> evaluateFinishTime(List<Task> tasks) {
         config.cycleLength - finishedPomodoroCounts % config.cycleLength;
     int trimmed = task.totalPomodoro - remPomodoroToLongBreak;
     int longBreaksCount =
-        trimmed ~/ config.cycleLength + (remPomodoroToLongBreak > 0 ? 1 : 0);
+        trimmed ~/ config.cycleLength + (trimmed >= 0 ? 1 : 0);
     int shortBreaksCount = task.totalPomodoro - longBreaksCount;
+    Get.log('$remPomodoroToLongBreak $trimmed ${trimmed~/config.cycleLength} $longBreaksCount $shortBreaksCount');
     dates.add(dates.last.add(Duration(
         minutes: task.totalPomodoro * config.pomodoroLength +
             longBreaksCount * config.longBreakLength +
