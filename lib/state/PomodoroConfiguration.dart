@@ -33,13 +33,18 @@ class PomodoroConfiguration extends GetxController {
   static const keyPrefShortBreakLength = 'key_pref_short_break_length';
   static const keyPrefLongBreakLength = 'key_pref_long_break_length';
 
+  final _sp = Get.find<SharedPreferences>();
+
   int get cycleLength => _cycleLength.value;
 
   set cycleLength(int value) {}
 
   int get pomodoroLength => _pomodoroLength.value;
 
-  set pomodoroLength(int value) {}
+  set pomodoroLength(int value) {
+    _sp.setInt(keyPrefPomodoroLength, value);
+    _pomodoroLength.value = value;
+  }
 
   int get shortBreakLength => _shortBreakLength.value;
 

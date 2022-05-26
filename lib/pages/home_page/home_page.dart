@@ -1,8 +1,10 @@
 import 'package:a_pomodoro_tracler/db/db.dart';
+import 'package:a_pomodoro_tracler/pages/settings_page/settings_page.dart';
 import 'package:a_pomodoro_tracler/state/PomodoroConfiguration.dart';
 import 'package:a_pomodoro_tracler/state/TaskListController.dart';
 import 'package:a_pomodoro_tracler/state/TimerController.dart';
 import 'package:a_pomodoro_tracler/utility.dart';
+import 'package:a_pomodoro_tracler/widgets/DBQueryDLView.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,24 +15,33 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pomodoro Tracker'),
+        title: const Text('Pomodoro Tracker'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Get.to(() => SettingsPage());
+            },
+          )
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+        children: const [
           _TimerDisplay(),
           _TimerControllers(),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0),
             child: _TaskAdder(),
           ),
           _SectionBadge(child: Text('Tasks')),
-          _TaskListView(),
+          Expanded(child: _TaskListView()),
           // _EstiminationInspector(),
           _SectionBadge(child: Text('Finished')),
-          _FinishedTaskView(),
+          Expanded(child: _TodayFinishedTaskView()),
         ],
       ),
+      resizeToAvoidBottomInset: false,
     );
   }
 }
@@ -43,7 +54,7 @@ class _EstiminationInspector extends StatelessWidget {
     final c = Get.find<TaskListController>();
     return Obx(() {
       final evaluatedFinishTime = evaluateFinishTime(c.queryListener.dataList);
-      return Text('${evaluatedFinishTime.map((e) => e.toString()).join('\n')}');
+      return Text(evaluatedFinishTime.map((e) => e.toString()).join('\n'));
     });
   }
 }
@@ -72,7 +83,7 @@ class _TimerDisplay extends StatelessWidget {
     final timerString = Get.find<TimerController>().timerString;
     return Obx(() {
       return Text(timerString.value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 26,
           ));
     });
@@ -84,18 +95,28 @@ class _TimerControllers extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tc = Get.find<TimerController>();
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-        width: double.infinity,
-        child: TextButton(
-          onPressed: () {
-            tc.startTimer();
-          },
-          child: Text('START'),
-        ),
-      ),
+    final controller = Get.find<TimerController>();
+    return SizedBox(
+      child: Obx(() {
+        if (controller.status.value == TimerControllerStatus.running) {
+          return ElevatedButton(
+            onPressed: () {
+              Get.find<TimerController>().cancelTimer();
+            },
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.red),
+            ),
+            child: Text('Cancel'),
+          );
+        } else {
+          return ElevatedButton(
+            onPressed: () {
+              controller.startTimer();
+            },
+            child: Text('Start'),
+          );
+        }
+      }),
     );
   }
 }
@@ -108,6 +129,9 @@ class _TaskListView extends StatelessWidget {
     final controller = Get.find<TaskListController>();
     return Obx(() {
       final finishTimes = evaluateFinishTime(controller.queryListener.dataList);
+      if (controller.queryListener.dataList.isEmpty) {
+        return const _EmptyList();
+      }
       return ListView.builder(
         itemBuilder: (context, index) => _TaskTile(
           task: controller.queryListener.dataList[index],
@@ -117,6 +141,20 @@ class _TaskListView extends StatelessWidget {
         shrinkWrap: true,
       );
     });
+  }
+}
+
+class _EmptyList extends StatelessWidget {
+  const _EmptyList({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text('Empty'),
+      ),
+    );
   }
 }
 
@@ -184,7 +222,7 @@ class _TaskAdder extends StatelessWidget {
     }
 
     return TextField(
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 8),
       ),
@@ -194,20 +232,29 @@ class _TaskAdder extends StatelessWidget {
   }
 }
 
-class _FinishedTaskView extends StatelessWidget {
-  const _FinishedTaskView({Key? key}) : super(key: key);
+class _AllFinishedTaskView extends StatelessWidget {
+  const _AllFinishedTaskView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final fc = Get.find<FinishedTasksController>();
-    return Obx(() {
-      return ListView.builder(
-        itemBuilder: (context, index) =>
-            _FinishedTaskTile(task: fc.todayFinishedQL.dataList[index]),
-        itemCount: fc.todayFinishedQL.dataList.length,
-        shrinkWrap: true,
-      );
-    });
+    return DBQueryDLView(
+      dataList: fc.allFinishedQL.dataList,
+      builder: (_, item, __) => _FinishedTaskTile(task: item),
+    );
+  }
+}
+
+class _TodayFinishedTaskView extends StatelessWidget {
+  const _TodayFinishedTaskView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final fc = Get.find<FinishedTasksController>();
+    return DBQueryDLView(
+      dataList: fc.todayFinishedQL.dataList,
+      builder: (_, item, __) => _FinishedTaskTile(task: item),
+    );
   }
 }
 
@@ -218,6 +265,10 @@ class _FinishedTaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text('${task.title} ${task.finishedAt}');
+    return ListTile(
+      title: Text(task.title),
+      trailing: Text(minuteFormat.format(task.finishedAt)),
+      subtitle: Text('${task.pomodoroLength} min'),
+    );
   }
 }

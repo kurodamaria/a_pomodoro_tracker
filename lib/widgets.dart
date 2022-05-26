@@ -1,47 +1,9 @@
-import 'package:a_pomodoro_tracler/db/db.dart';
 import 'package:a_pomodoro_tracler/state/TaskListController.dart';
 import 'package:a_pomodoro_tracler/state/TimerController.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-typedef DbQueryListItemBuilder<T> = Widget Function(
-    BuildContext context, int index, T item);
-
-class DbQueryListBuilder<T> extends StatelessWidget {
-  const DbQueryListBuilder(
-      {Key? key, required this.query, required this.itemBuilder})
-      : super(key: key);
-
-  final MultiSelectable<T> query;
-
-  final DbQueryListItemBuilder<T> itemBuilder;
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<List<T>>(
-      stream: query.watch(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data!.isEmpty) {
-            return EmptyIndicator();
-          } else {
-            return ListView.builder(
-              itemBuilder: (context, index) =>
-                  itemBuilder(context, index, snapshot.data![index]),
-              itemCount: snapshot.data!.length,
-            );
-          }
-        } else if (snapshot.hasError) {
-          return ErrorIndicator();
-        } else {
-          return LoadingIndicator();
-        }
-      },
-    );
-  }
-}
 
 class EmptyIndicator extends StatelessWidget {
   const EmptyIndicator({Key? key}) : super(key: key);
@@ -98,9 +60,6 @@ class TimerDisplay extends StatelessWidget {
   }
 }
 
-
-
-
 class TimerControllers extends StatelessWidget {
   const TimerControllers({Key? key}) : super(key: key);
 
@@ -132,39 +91,3 @@ class TimerControllers extends StatelessWidget {
     );
   }
 }
-
-
-class EstimatedFinishingTime extends StatelessWidget {
-  const EstimatedFinishingTime({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<TaskListController>();
-    return Obx(() {
-      return Text(
-          'Estimated Finishing Time: ${controller.estimatedFinishingTime.value}');
-    });
-  }
-}
-
-// typedef IndexedWidgetBuilderWithItem<T> = Widget Function(
-//     BuildContext context, int index, T item);
-//
-// class RXListBuilder<T> extends StatelessWidget {
-//   const RXListBuilder({Key? key, required this.list, required this.itemBuilder})
-//       : super(key: key);
-//
-//   final RxList<T> list;
-//   final IndexedWidgetBuilderWithItem<T> itemBuilder;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Obx(() {
-//       return Text('$list');
-//       // return ListView.builder(
-//       //   itemBuilder: (context, index) =>
-//       //       itemBuilder(context, index, list[index]),
-//       // );
-//     });
-//   }
-// }

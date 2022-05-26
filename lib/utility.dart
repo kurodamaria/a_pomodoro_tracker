@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 final timeFormat = DateFormat.Hms();
+final minuteFormat = DateFormat.Hm();
 
 /// Evaluate finish time for each task in [tasks]
 /// based on the current pomodoro configuration.
